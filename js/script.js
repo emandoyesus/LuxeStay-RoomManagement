@@ -26,6 +26,33 @@ document.addEventListener('DOMContentLoaded', () => {
                         showError(input, errorSpan);
                     }
                 }
+
+                // regex validation
+                if (input.value.trim() !== '') {
+                    // Name Validation
+                    if (input.name === 'name' && !/^[a-zA-Z\s]+$/.test(input.value)) {
+                        isValid = false;
+                        if (errorSpan) errorSpan.textContent = "Only letters and spaces allowed.";
+                        showError(input, errorSpan);
+                    }
+
+                    // Phone Validation
+                    if (input.type === 'tel') {
+                        // Pattern: Starts with 1-9, exactly 10 digits
+                        if (!/^[1-9]\d{9}$/.test(input.value)) {
+                            isValid = false;
+                            showError(input, errorSpan);
+                        }
+                    }
+
+                    // Email Validation
+                    if (input.type === 'email') {
+                        if (!/^\S+@\S+\.\S+$/.test(input.value)) {
+                            isValid = false;
+                            showError(input, errorSpan);
+                        }
+                    }
+                }
             });
 
             if (!isValid) {

@@ -1,3 +1,6 @@
+<?php
+include 'db.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -24,70 +27,44 @@
     </header>
 
     <main class="container animate-fade-in">
-        <section class="hero">
-            <h1>Meet the Team</h1>
-            <p>The brilliant minds behind the LuxeStay Hotel Management System.</p>
-        </section>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <div>
+                <h1>Meet the Team</h1>
+                <p style="color: var(--text-muted);">The brilliant minds behind the LuxeStay Hotel Management System.
+                </p>
+            </div>
+        </div>
 
         <section class="members-grid">
-            <!-- Project Member 1 -->
-            <div class="card member-card">
-                <div class="member-avatar">ET</div>
-                <h3>Emandoyesus Tesfay</h3>
-                <p style="color: var(--primary-color); margin-bottom: 0.5rem;">UGR/188057/16</p>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Section-1</p>
-            </div>
+            <?php
+            $sql = "SELECT * FROM members";
+            $result = $conn->query($sql);
 
-            <!-- Project Member 2 -->
-            <div class="card member-card">
-                <div class="member-avatar"
-                    style="background: linear-gradient(135deg, var(--secondary-color), var(--primary-color));">DG</div>
-                <h3>Dawit Gerezgiher</h3>
-                <p style="color: var(--primary-color); margin-bottom: 0.5rem;">UGR/188001/16</p>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Section-1</p>
-            </div>
+            if ($result && $result->num_rows > 0) {
+                while ($row = $result->fetch_assoc()) {
+                    // Generate a consistent gradient based on ID
+                    $colors = [
+                        ['#6366f1', '#ec4899'], // Default
+                        ['#10b981', '#3b82f6'], // Green-Blue
+                        ['#f59e0b', '#ef4444'], // Orange-Red
+                        ['#8b5cf6', '#ec4899'], // Purple-Pink
+                    ];
+                    $gradientIdx = $row['id'] % 4;
+                    $gradient = "linear-gradient(135deg, {$colors[$gradientIdx][0]}, {$colors[$gradientIdx][1]})";
 
-            <!-- Project Member 3 -->
-            <div class="card member-card">
-                <div class="member-avatar"
-                    style="background: linear-gradient(135deg, var(--success), var(--primary-color));">HG</div>
-                <h3>Haftom Gebrehiwot</h3>
-                <p style="color: var(--primary-color); margin-bottom: 0.5rem;">UGR/188215/16</p>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Section-2</p>
-            </div>
-
-            <!-- Project Member 4 -->
-            <div class="card member-card">
-                <div class="member-avatar"
-                    style="background: linear-gradient(135deg, #f59e0b, var(--secondary-color));">KG</div>
-                <h3>Kiros Gebremariam</h3>
-                <p style="color: var(--primary-color); margin-bottom: 0.5rem;">UGR/188336/16</p>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Section-1</p>
-            </div>
-
-            <!-- Project Member 5 -->
-            <div class="card member-card">
-                <div class="member-avatar">EK</div>
-                <h3>Edilawit Kalau</h3>
-                <p style="color: var(--primary-color); margin-bottom: 0.5rem;">UGR/188034/16</p>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Section-1</p>
-            </div>
-
-            <!-- Project Member 6 -->
-            <div class="card member-card">
-                <div class="member-avatar">SF</div>
-                <h3>Saron Felege</h3>
-                <p style="color: var(--primary-color); margin-bottom: 0.5rem;">UGR/188639/16</p>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Section-1</p>
-            </div>
-
-            <!-- Project Member 7 -->
-            <div class="card member-card">
-                <div class="member-avatar">AG</div>
-                <h3>Abeba Gebru</h3>
-                <p style="color: var(--primary-color); margin-bottom: 0.5rem;">EITM/TUR182021/17</p>
-                <p style="color: var(--text-muted); font-size: 0.9rem;">Section-1</p>
-            </div>
+                    echo "<div class='card member-card'>
+                        <div class='member-avatar' style='background: $gradient;'>
+                            {$row['avatar']}
+                        </div>
+                        <h3>{$row['name']}</h3>
+                        <p style='color: var(--primary-color); margin-bottom: 0.5rem;'>{$row['student_id']}</p>
+                        <p style='color: var(--text-muted); font-size: 0.9rem;'>{$row['section']}</p>
+                    </div>";
+                }
+            } else {
+                echo "<p style='text-align: center; grid-column: 1/-1;'>No team members found.</p>";
+            }
+            ?>
         </section>
     </main>
 

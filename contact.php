@@ -67,6 +67,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             </div>
 
             <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" placeholder="1234567890">
+                <span class="error-msg" style="color: var(--danger); font-size: 0.875rem; display: none;">Phone format: 10 digits (e.g. 9876543210).</span>
+            </div>
+
+            <div class="form-group">
                 <label for="email">Email Address *</label>
                 <input type="email" id="email" name="email" required>
                 <span class="error-msg" style="color: var(--danger); font-size: 0.875rem; display: none;">Valid email is
