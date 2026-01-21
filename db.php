@@ -1,21 +1,37 @@
 <?php
 $servername = "localhost";
-$username = "hotel_owner";
-$password = "password123";
 $dbname = "hotel_management";
 
-// Enable error reporting for debugging (fail gracefully)
+// Credentials to try (Priority: Custom Setup -> XAMPP -> MAMP)
+$credentials = [
+    ["hotel_owner", "password123"], // Linux Script Setup
+    ["root", ""],                   // XAMPP Default
+    ["root", "root"]                // MAMP Default
+];
+
+$conn = null;
+$connected = false;
+
+// Enable error reporting for debugging
 mysqli_report(MYSQLI_REPORT_OFF);
 
-try {
-    // Create connection
-    $conn = new mysqli($servername, $username, $password, $dbname);
-
-    // Check connection
-    if ($conn->connect_error) {
-        throw new Exception($conn->connect_error);
+foreach ($credentials as $cred) {
+    try {
+        $conn = new mysqli($servername, $cred[0], $cred[1], $dbname);
+        // If we get here, connection changed successfully
+        $connected = true;
+        break;
+    } catch (Exception $e) {
+        continue; // Try next credentials
     }
-} catch (Exception $e) {
+}
+
+if (!$connected) {
+    // If all attempts failed, simulate a failed connection for the error handler below
+    // We create a dummy connection object or just let the error handler run
+    // Since the error handler below uses exit(), we can just trigger it.
+    // However, the original code relied on the catch block catching the *last* exception.
+    // Instead, we will manually trigger the error page if not connected.
     // Graceful error handling - Prevents "Crash"
     ?>
     <!DOCTYPE html>
