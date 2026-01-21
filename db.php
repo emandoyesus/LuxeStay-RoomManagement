@@ -121,51 +121,50 @@ if (!$connected_to_server) {
     die($error_html);
 }
 
+// SUCCESSFUL CONNECTION! Set charset to utf8mb4
+$conn->set_charset("utf8mb4");
+
 // STEP 2: Check if database exists, create if not
 $db_selected = $conn->select_db($dbname);
 
 if (!$db_selected) {
-    // Database doesn't exist - create it
+    echo "<!-- Database not found, creating... -->";
     $sql = "CREATE DATABASE IF NOT EXISTS $dbname CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci";
     if ($conn->query($sql) === TRUE) {
         $conn->select_db($dbname);
-
-        // STEP 3: Auto-import tables from SQL file
-        $sqlFile = __DIR__ . '/DATABASE/hotel_management.sql';
-        if (file_exists($sqlFile)) {
-            $sqlContent = file_get_contents($sqlFile);
-
-            // Execute multi-query to import all tables
-            if ($conn->multi_query($sqlContent)) {
-                do {
-                    // Consume all results to clear the buffer
-                    if ($result = $conn->store_result()) {
-                        $result->free();
-                    }
-                } while ($conn->more_results() && $conn->next_result());
-            }
-        } else {
-            die("Error: SQL file not found at: " . $sqlFile);
-        }
     } else {
-        die("Error creating database: " . $conn->error . "<br>Make sure your MySQL user has CREATE DATABASE permission.");
+        die("Error creating database: " . $conn->error);
     }
 }
 
-// STEP 4: Verify tables exist
-$tables_check = $conn->query("SHOW TABLES");
-if ($tables_check && $tables_check->num_rows == 0) {
-    // Database exists but no tables - import them
+// STEP 3: Check if both main tables exist
+$rooms_exists = $conn->query("SHOW TABLES LIKE 'rooms'")->num_rows > 0;
+$members_exists = $conn->query("SHOW TABLES LIKE 'members'")->num_rows > 0;
+
+if (!$rooms_exists || !$members_exists) {
+    echo "<!-- Database tables missing, initializing schema... -->";
     $sqlFile = __DIR__ . '/DATABASE/hotel_management.sql';
+
     if (file_exists($sqlFile)) {
         $sqlContent = file_get_contents($sqlFile);
+
+        // Use multi_query to run the entire script
         if ($conn->multi_query($sqlContent)) {
             do {
-                if ($result = $conn->store_result()) {
-                    $result->free();
+                // Clear the results buffer
+                if ($res = $conn->store_result()) {
+                    $res->free();
                 }
             } while ($conn->more_results() && $conn->next_result());
+
+            if ($conn->errno) {
+                die("<h1>SQL Setup Error</h1><p>Error during table creation: " . $conn->error . "</p>");
+            }
+        } else {
+            die("<h1>SQL Setup Failed</h1><p>Could not execute setup script: " . $conn->error . "</p>");
         }
+    } else {
+        die("<h1>Setup File Missing</h1><p>The file <code>DATABASE/hotel_management.sql</code> was not found.</p>");
     }
 }
 
