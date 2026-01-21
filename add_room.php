@@ -17,14 +17,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Price must be a number.";
     } else {
         $stmt = $conn->prepare("INSERT INTO rooms (room_number, type, price, status, description) VALUES (?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssdss", $room_number, $type, $price, $status, $description);
 
-        if ($stmt->execute()) {
-            $success = "Room added successfully!";
+        if ($stmt === false) {
+            $error = "Database error: " . $conn->error . ". Please ensure the database and tables are set up correctly.";
         } else {
-            $error = "Error: " . $stmt->error;
+            $stmt->bind_param("ssdss", $room_number, $type, $price, $status, $description);
+
+            if ($stmt->execute()) {
+                $success = "Room added successfully!";
+            } else {
+                $error = "Error: " . $stmt->error;
+            }
+            $stmt->close();
         }
-        $stmt->close();
     }
 }
 ?>

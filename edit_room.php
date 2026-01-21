@@ -7,11 +7,15 @@ $room = null;
 if (isset($_GET['id'])) {
     $id = $_GET['id'];
     $stmt = $conn->prepare("SELECT * FROM rooms WHERE id = ?");
-    $stmt->bind_param("i", $id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    $room = $result->fetch_assoc();
-    $stmt->close();
+    if ($stmt) {
+        $stmt->bind_param("i", $id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $room = $result->fetch_assoc();
+        $stmt->close();
+    } else {
+        $error = "Database error: " . $conn->error;
+    }
 }
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -28,20 +32,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $error = "Price must be a number.";
     } else {
         $stmt = $conn->prepare("UPDATE rooms SET room_number=?, type=?, price=?, status=?, description=? WHERE id=?");
-        $stmt->bind_param("ssdssi", $room_number, $type, $price, $status, $description, $id);
 
-        if ($stmt->execute()) {
-            $success = "Room updated successfully!";
-            // Refresh data
-            $stmt_refresh = $conn->prepare("SELECT * FROM rooms WHERE id = ?");
-            $stmt_refresh->bind_param("i", $id);
-            $stmt_refresh->execute();
-            $room = $stmt_refresh->get_result()->fetch_assoc();
-            $stmt_refresh->close();
+        if ($stmt === false) {
+            $error = "Database error: " . $conn->error . ". Please ensure the database and tables are set up correctly.";
         } else {
-            $error = "Error: " . $stmt->error;
+            $stmt->bind_param("ssdssi", $room_number, $type, $price, $status, $description, $id);
+
+            if ($stmt->execute()) {
+                $success = "Room updated successfully!";
+                // Refresh data
+                $stmt_refresh = $conn->prepare("SELECT * FROM rooms WHERE id = ?");
+                if ($stmt_refresh) {
+                    $stmt_refresh->bind_param("i", $id);
+                    $stmt_refresh->execute();
+                    $room = $stmt_refresh->get_result()->fetch_assoc();
+                    $stmt_refresh->close();
+                }
+            } else {
+                $error = "Error: " . $stmt->error;
+            }
+            $stmt->close();
         }
-        $stmt->close();
     }
 }
 

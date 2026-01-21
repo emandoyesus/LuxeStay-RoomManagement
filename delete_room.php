@@ -6,6 +6,11 @@ if (isset($_GET['id'])) {
 
     // Prepared statement for security
     $stmt = $conn->prepare("DELETE FROM rooms WHERE id = ?");
+
+    if ($stmt === false) {
+        die("Database error: " . $conn->error . ". Please ensure the database and tables are set up correctly.");
+    }
+
     $stmt->bind_param("i", $id);
 
     if ($stmt->execute()) {
